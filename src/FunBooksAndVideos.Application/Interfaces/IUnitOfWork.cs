@@ -1,6 +1,7 @@
-namespace FunBooksAndVideos.Application.Interfaces;
-
-public interface IUnitOfWork
+namespace FunBooksAndVideos.Application.Interfaces
 {
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+    public interface IUnitOfWork
+    {
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+    }
 }

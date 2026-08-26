@@ -1,9 +1,10 @@
-namespace FunBooksAndVideos.Application.Interfaces;
-
-public interface IRepository<TEntity>
-    where TEntity : class
+namespace FunBooksAndVideos.Application.Interfaces
 {
-    IQueryable<TEntity> Query();
+    public interface IRepository<TEntity>
+        where TEntity : class
+    {
+        IQueryable<TEntity> Query();
 
-    ValueTask AddAsync(TEntity entity, CancellationToken cancellationToken = default);
+        ValueTask AddAsync(TEntity entity, CancellationToken cancellationToken = default);
+    }
 }

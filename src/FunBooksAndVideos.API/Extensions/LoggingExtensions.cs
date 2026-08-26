@@ -1,28 +1,29 @@
-namespace FunBooksAndVideos.API.Extensions;
-
-public static class LoggingExtensions
+namespace FunBooksAndVideos.API.Extensions
 {
-    private const string CorrelationIdHeader = "X-Correlation-ID";
-
-    public static WebApplication UseCorrelationId(this WebApplication app)
+    public static class LoggingExtensions
     {
-        app.Use(async (context, next) =>
+        private const string CorrelationIdHeader = "X-Correlation-ID";
+
+        public static WebApplication UseCorrelationId(this WebApplication app)
         {
-            var correlationId = context.Request.Headers[CorrelationIdHeader].FirstOrDefault();
-            if (string.IsNullOrWhiteSpace(correlationId))
+            app.Use(async (context, next) =>
             {
-                correlationId = context.TraceIdentifier;
-            }
+                var correlationId = context.Request.Headers[CorrelationIdHeader].FirstOrDefault();
+                if (string.IsNullOrWhiteSpace(correlationId))
+                {
+                    correlationId = context.TraceIdentifier;
+                }
 
-            context.Response.Headers[CorrelationIdHeader] = correlationId;
-            using (context.RequestServices.GetRequiredService<ILoggerFactory>()
-                .CreateLogger("CorrelationId")
-                .BeginScope(new Dictionary<string, object> { ["CorrelationId"] = correlationId }))
-            {
-                await next(context);
-            }
-        });
+                context.Response.Headers[CorrelationIdHeader] = correlationId;
+                using (context.RequestServices.GetRequiredService<ILoggerFactory>()
+                    .CreateLogger("CorrelationId")
+                    .BeginScope(new Dictionary<string, object> { ["CorrelationId"] = correlationId }))
+                {
+                    await next(context);
+                }
+            });
 
-        return app;
+            return app;
+        }
     }
 }

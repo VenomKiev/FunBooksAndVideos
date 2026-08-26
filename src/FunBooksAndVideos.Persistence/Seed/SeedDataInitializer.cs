@@ -1,10 +1,18 @@
 using FunBooksAndVideos.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace FunBooksAndVideos.Persistence.Seed;
-
-public sealed class SeedDataInitializer(FunBooksAndVideosDbContext dbContext) : ISeedDataProvider
+namespace FunBooksAndVideos.Persistence.Seed
 {
-    public Task SeedAsync(CancellationToken cancellationToken = default)
-        => dbContext.Database.EnsureCreatedAsync(cancellationToken);
+    public sealed class SeedDataInitializer(FunBooksAndVideosDbContext dbContext) : ISeedDataProvider
+    {
+        public Task SeedAsync(CancellationToken cancellationToken = default)
+            => SeedAndSaveAsync(cancellationToken);
+
+        private async Task SeedAndSaveAsync(CancellationToken cancellationToken)
+        {
+            await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+            SeedData.AddInitialData(dbContext);
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+    }
 }

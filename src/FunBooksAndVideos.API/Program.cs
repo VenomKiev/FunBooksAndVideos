@@ -1,6 +1,8 @@
 using Serilog;
 using FunBooksAndVideos.API.Extensions;
+using FunBooksAndVideos.API.Endpoints;
 using FunBooksAndVideos.Application.Features;
+using FunBooksAndVideos.Application.Services;
 using FunBooksAndVideos.Persistence.Configuration;
 using FunBooksAndVideos.Persistence.Seed;
 
@@ -14,6 +16,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddCentralExceptionHandling();
 builder.Services.AddMediatR(configuration =>
     configuration.RegisterServicesFromAssembly(typeof(FeatureAssemblyMarker).Assembly));
+builder.Services.AddScoped<PurchaseOrderValidationService>();
 builder.Services.AddPersistence(
     builder.Configuration.GetValue<string>("Persistence:DatabaseName") ?? "FunBooksAndVideos");
 builder.Services.AddScoped<ISeedDataProvider, SeedDataInitializer>();
@@ -34,5 +37,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCorrelationId();
 app.UseCentralExceptionHandling();
+app.MapPurchaseOrderEndpoints();
 
 app.Run();

@@ -1,6 +1,7 @@
-namespace FunBooksAndVideos.Persistence.Seed;
-
-public interface ISeedDataProvider
+namespace FunBooksAndVideos.Persistence.Seed
 {
-    Task SeedAsync(CancellationToken cancellationToken = default);
+    public interface ISeedDataProvider
+    {
+        Task SeedAsync(CancellationToken cancellationToken = default);
+    }
 }

@@ -1,3 +1,4 @@
-namespace FunBooksAndVideos.Application.Features;
-
-public sealed class FeatureAssemblyMarker;
+namespace FunBooksAndVideos.Application.Features
+{
+    public sealed class FeatureAssemblyMarker;
+}
