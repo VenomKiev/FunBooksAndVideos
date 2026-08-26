@@ -55,8 +55,13 @@ namespace FunBooksAndVideos.Application.Features.PurchaseOrders.Handlers
                     return new(false, null, null, null, null, null, activation.ErrorCode, activation.ErrorMessage);
                 }
 
-                activatedMemberships.Add(activation.Membership!);
-                await membershipRepository.AddAsync(activation.Membership!, cancellationToken);
+                var membership = activation.Membership!;
+                activatedMemberships.Add(membership);
+                await membershipRepository.AddAsync(membership, cancellationToken);
+                logger.LogInformation(
+                    "Membership {MembershipType} activated for customer {CustomerId}",
+                    membership.MembershipType,
+                    customer.Id);
             }
 
             foreach (var physicalItem in validation.Items.Where(item => item.Product.IsPhysical))
@@ -67,7 +72,13 @@ namespace FunBooksAndVideos.Application.Features.PurchaseOrders.Handlers
                     return new(false, null, null, null, null, null, shippingResult.ErrorCode, shippingResult.ErrorMessage);
                 }
 
-                await shippingSlipRepository.AddAsync(shippingResult.ShippingSlip!, cancellationToken);
+                var shippingSlip = shippingResult.ShippingSlip!;
+                await shippingSlipRepository.AddAsync(shippingSlip, cancellationToken);
+                logger.LogInformation(
+                    "Shipping slip {ShippingSlipId} created for purchase order {PurchaseOrderId} and product {ProductId}",
+                    shippingSlip.Id,
+                    order.Id,
+                    physicalItem.Product.Id);
             }
 
             try

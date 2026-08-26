@@ -12,7 +12,10 @@ namespace FunBooksAndVideos.Persistence.Seed
         {
             await dbContext.Database.EnsureCreatedAsync(cancellationToken);
             SeedData.AddInitialData(dbContext);
-            await dbContext.SaveChangesAsync(cancellationToken);
+            if (dbContext.ChangeTracker.HasChanges())
+            {
+                await dbContext.SaveChangesAsync(cancellationToken);
+            }
         }
     }
 }

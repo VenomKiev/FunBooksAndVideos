@@ -32,10 +32,10 @@ namespace FunBooksAndVideos.Application.Services
                 }
 
                 var product = await productRepository.GetByIdAsync(request.ItemId, cancellationToken);
-                var expectedType = product?.Type == ProductType.Membership ? "membership" : "product";
-                if (product is null || !string.Equals(expectedType, request.ItemType, StringComparison.OrdinalIgnoreCase))
+
+                if (product is null)
                 {
-                    return (false, "ITEM_NOT_FOUND", $"Order item '{request.ItemId}' was not found or has an invalid type.", []);
+                    return (false, "ITEM_NOT_FOUND", $"Order item '{request.ItemId}' was not found.", []);
                 }
 
                 if (product.MembershipType is { } membershipType &&

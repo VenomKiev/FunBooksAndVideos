@@ -14,6 +14,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.UseSerilog();
 
 builder.Services.AddOpenApi();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.CustomSchemaIds(type => type.FullName!.Replace('+', '.'));
+});
 builder.Services.AddCentralExceptionHandling();
 builder.Services.AddMediatR(configuration =>
     configuration.RegisterServicesFromAssembly(typeof(FeatureAssemblyMarker).Assembly));
@@ -35,6 +39,8 @@ await using (var scope = app.Services.CreateAsyncScope())
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
