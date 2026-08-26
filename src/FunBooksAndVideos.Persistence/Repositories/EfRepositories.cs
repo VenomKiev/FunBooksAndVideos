@@ -24,6 +24,17 @@ public sealed class EfMembershipRepository(FunBooksAndVideosDbContext dbContext)
         => dbContext.Memberships.AddAsync(membership, cancellationToken).AsTask();
 }
 
+public sealed class EfShippingSlipRepository(FunBooksAndVideosDbContext dbContext) : IShippingSlipRepository
+{
+    public Task AddAsync(ShippingSlip shippingSlip, CancellationToken cancellationToken = default)
+        => dbContext.ShippingSlips.AddAsync(shippingSlip, cancellationToken).AsTask();
+
+    public async Task<IReadOnlyCollection<ShippingSlip>> GetByOrderIdAsync(Guid purchaseOrderId, CancellationToken cancellationToken = default)
+        => await dbContext.ShippingSlips
+            .Where(shippingSlip => shippingSlip.PurchaseOrderId == purchaseOrderId)
+            .ToListAsync(cancellationToken);
+}
+
 public sealed class EfProductRepository(FunBooksAndVideosDbContext dbContext) : IProductRepository
 {
     public Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

@@ -19,6 +19,7 @@ builder.Services.AddMediatR(configuration =>
     configuration.RegisterServicesFromAssembly(typeof(FeatureAssemblyMarker).Assembly));
 builder.Services.AddScoped<PurchaseOrderValidationService>();
 builder.Services.AddScoped<MembershipActivationService>();
+builder.Services.AddScoped<ShippingSlipService>();
 builder.Services.AddPersistence(
     builder.Configuration.GetValue<string>("Persistence:DatabaseName") ?? "FunBooksAndVideos");
 builder.Services.AddScoped<ISeedDataProvider, SeedDataInitializer>();

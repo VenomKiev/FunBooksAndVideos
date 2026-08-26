@@ -31,7 +31,9 @@ public sealed class CreatePurchaseOrderCommandHandlerTests
             new FakeUnitOfWork(),
             NullLogger<CreatePurchaseOrderCommandHandler>.Instance,
             new MembershipActivationService(),
-            new FakeMembershipRepository());
+            new FakeMembershipRepository(),
+            new ShippingSlipService(),
+            new FakeShippingSlipRepository());
 
         // Act
         var result = await handler.Handle(
@@ -62,7 +64,9 @@ public sealed class CreatePurchaseOrderCommandHandlerTests
             new FakeUnitOfWork(),
             NullLogger<CreatePurchaseOrderCommandHandler>.Instance,
             new MembershipActivationService(),
-            new FakeMembershipRepository());
+            new FakeMembershipRepository(),
+            new ShippingSlipService(),
+            new FakeShippingSlipRepository());
 
         // Act
         var result = await handler.Handle(new CreatePurchaseOrderCommand(customer.Id, []), CancellationToken.None);
@@ -85,7 +89,9 @@ public sealed class CreatePurchaseOrderCommandHandlerTests
             new ThrowingUnitOfWork(),
             NullLogger<CreatePurchaseOrderCommandHandler>.Instance,
             new MembershipActivationService(),
-            new FakeMembershipRepository());
+            new FakeMembershipRepository(),
+            new ShippingSlipService(),
+            new FakeShippingSlipRepository());
 
         // Act
         Func<Task> act = () => handler.Handle(
@@ -142,6 +148,15 @@ public sealed class CreatePurchaseOrderCommandHandlerTests
 
         public Task AddAsync(Membership membership, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
+    }
+
+    private sealed class FakeShippingSlipRepository : IShippingSlipRepository
+    {
+        public Task AddAsync(ShippingSlip shippingSlip, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task<IReadOnlyCollection<ShippingSlip>> GetByOrderIdAsync(Guid purchaseOrderId, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyCollection<ShippingSlip>>([]);
     }
 }
 }

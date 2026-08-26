@@ -14,6 +14,8 @@ namespace FunBooksAndVideos.Persistence.Context
 
         public DbSet<Membership> Memberships => Set<Membership>();
 
+        public DbSet<ShippingSlip> ShippingSlips => Set<ShippingSlip>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<PurchaseOrder>()

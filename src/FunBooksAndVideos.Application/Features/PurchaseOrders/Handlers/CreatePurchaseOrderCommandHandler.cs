@@ -15,7 +15,9 @@ namespace FunBooksAndVideos.Application.Features.PurchaseOrders.Handlers
         IUnitOfWork unitOfWork,
         ILogger<CreatePurchaseOrderCommandHandler> logger,
         MembershipActivationService membershipActivationService,
-        IMembershipRepository membershipRepository)
+        IMembershipRepository membershipRepository,
+        ShippingSlipService shippingSlipService,
+        IShippingSlipRepository shippingSlipRepository)
         : IRequestHandler<CreatePurchaseOrderCommand, CreatePurchaseOrderResult>
     {
         public async Task<CreatePurchaseOrderResult> Handle(
@@ -55,6 +57,17 @@ namespace FunBooksAndVideos.Application.Features.PurchaseOrders.Handlers
 
                 activatedMemberships.Add(activation.Membership!);
                 await membershipRepository.AddAsync(activation.Membership!, cancellationToken);
+            }
+
+            foreach (var physicalItem in validation.Items.Where(item => item.Product.IsPhysical))
+            {
+                var shippingResult = shippingSlipService.CreateForPhysicalProduct(order, physicalItem.Product);
+                if (!shippingResult.IsSuccess)
+                {
+                    return new(false, null, null, null, null, null, shippingResult.ErrorCode, shippingResult.ErrorMessage);
+                }
+
+                await shippingSlipRepository.AddAsync(shippingResult.ShippingSlip!, cancellationToken);
             }
 
             try

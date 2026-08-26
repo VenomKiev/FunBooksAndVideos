@@ -18,6 +18,7 @@ namespace FunBooksAndVideos.Persistence.Configuration
             services.AddScoped<IProductRepository, EfProductRepository>();
             services.AddScoped<IPurchaseOrderRepository, EfPurchaseOrderRepository>();
             services.AddScoped<IMembershipRepository, EfMembershipRepository>();
+            services.AddScoped<IShippingSlipRepository, EfShippingSlipRepository>();
             services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
             return services;
