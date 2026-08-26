@@ -9,6 +9,7 @@ namespace FunBooksAndVideos.Application.Services
     {
         public async Task<(bool IsValid, string? Code, string? Message, List<(CreatePurchaseOrderItem Request, Product Product)> Items)> ValidateAsync(
             CreatePurchaseOrderCommand command,
+            Customer customer,
             CancellationToken cancellationToken)
         {
             if (command.CustomerId == Guid.Empty)
@@ -22,6 +23,7 @@ namespace FunBooksAndVideos.Application.Services
             }
 
             var resolvedItems = new List<(CreatePurchaseOrderItem Request, Product Product)>();
+            var requestedMembershipTypes = new HashSet<MembershipType>();
             foreach (var request in command.Items)
             {
                 if (request.ItemId == Guid.Empty || request.Quantity <= 0 || string.IsNullOrWhiteSpace(request.ItemType))
@@ -34,6 +36,13 @@ namespace FunBooksAndVideos.Application.Services
                 if (product is null || !string.Equals(expectedType, request.ItemType, StringComparison.OrdinalIgnoreCase))
                 {
                     return (false, "ITEM_NOT_FOUND", $"Order item '{request.ItemId}' was not found or has an invalid type.", []);
+                }
+
+                if (product.MembershipType is { } membershipType &&
+                    (!requestedMembershipTypes.Add(membershipType) || customer.Memberships.Any(membership =>
+                        membership.IsActive && membership.MembershipType == membershipType)))
+                {
+                    return (false, "DUPLICATE_ACTIVE_MEMBERSHIP", "The customer already has an active membership of this type.", []);
                 }
 
                 resolvedItems.Add((request, product));

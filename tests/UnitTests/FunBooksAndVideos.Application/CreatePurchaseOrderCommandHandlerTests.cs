@@ -1,9 +1,11 @@
 using FunBooksAndVideos.Application.Features.PurchaseOrders.Commands;
+using FluentAssertions;
 using FunBooksAndVideos.Application.Features.PurchaseOrders.Handlers;
 using FunBooksAndVideos.Application.Interfaces;
 using FunBooksAndVideos.Application.Services;
 using FunBooksAndVideos.Domain.Entities;
 using FunBooksAndVideos.Domain.Enums;
+using FunBooksAndVideos.Domain.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace FunBooksAndVideos.Application.UnitTests
@@ -14,6 +16,7 @@ public sealed class CreatePurchaseOrderCommandHandlerTests
     [Fact]
     public async Task Handle_MixedProductOrder_CreatesItemizedOrderWithCatalogTotal()
     {
+        // Arrange
         var customer = new Customer(Guid.NewGuid(), "Test Customer");
         var products = new[]
         {
@@ -26,8 +29,11 @@ public sealed class CreatePurchaseOrderCommandHandlerTests
             new FakeOrderRepository(orders),
             new PurchaseOrderValidationService(new FakeProductRepository(products)),
             new FakeUnitOfWork(),
-            NullLogger<CreatePurchaseOrderCommandHandler>.Instance);
+            NullLogger<CreatePurchaseOrderCommandHandler>.Instance,
+            new MembershipActivationService(),
+            new FakeMembershipRepository());
 
+        // Act
         var result = await handler.Handle(
             new CreatePurchaseOrderCommand(
                 customer.Id,
@@ -37,27 +43,58 @@ public sealed class CreatePurchaseOrderCommandHandlerTests
                 ]),
             CancellationToken.None);
 
-        Assert.True(result.IsSuccess);
-        Assert.Equal(74.97m, result.TotalPrice);
-        Assert.Equal(2, result.ItemLines!.Count);
-        Assert.Single(orders);
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.TotalPrice.Should().Be(74.97m);
+        result.ItemLines.Should().HaveCount(2);
+        orders.Should().ContainSingle();
     }
 
     [Fact]
     public async Task Handle_EmptyItems_ReturnsValidationFailure()
     {
+        // Arrange
         var customer = new Customer(Guid.NewGuid(), "Test Customer");
         var handler = new CreatePurchaseOrderCommandHandler(
             new FakeCustomerRepository(customer),
             new FakeOrderRepository([]),
             new PurchaseOrderValidationService(new FakeProductRepository([])),
             new FakeUnitOfWork(),
-            NullLogger<CreatePurchaseOrderCommandHandler>.Instance);
+            NullLogger<CreatePurchaseOrderCommandHandler>.Instance,
+            new MembershipActivationService(),
+            new FakeMembershipRepository());
 
+        // Act
         var result = await handler.Handle(new CreatePurchaseOrderCommand(customer.Id, []), CancellationToken.None);
 
-        Assert.False(result.IsSuccess);
-        Assert.Equal("ITEMS_REQUIRED", result.ErrorCode);
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be("ITEMS_REQUIRED");
+    }
+
+    [Fact]
+    public async Task Handle_SaveFailure_RemovesActivatedMembershipFromCustomer()
+    {
+        // Arrange
+        var customer = new Customer(Guid.NewGuid(), "Test Customer");
+        var membershipProduct = new Product(Guid.NewGuid(), "Book Club", ProductType.Membership, 9.99m, false, MembershipType.BookClub);
+        var handler = new CreatePurchaseOrderCommandHandler(
+            new FakeCustomerRepository(customer),
+            new FakeOrderRepository([]),
+            new PurchaseOrderValidationService(new FakeProductRepository([membershipProduct])),
+            new ThrowingUnitOfWork(),
+            NullLogger<CreatePurchaseOrderCommandHandler>.Instance,
+            new MembershipActivationService(),
+            new FakeMembershipRepository());
+
+        // Act
+        Func<Task> act = () => handler.Handle(
+            new CreatePurchaseOrderCommand(customer.Id, [new(membershipProduct.Id, "membership", 1)]),
+            CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        customer.Memberships.Should().BeEmpty();
     }
 
     private sealed class FakeCustomerRepository(Customer customer) : ICustomerRepository
@@ -90,6 +127,21 @@ public sealed class CreatePurchaseOrderCommandHandlerTests
     {
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
             => Task.FromResult(1);
+    }
+
+    private sealed class ThrowingUnitOfWork : IUnitOfWork
+    {
+        public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+            => throw new InvalidOperationException("Persistence failure");
+    }
+
+    private sealed class FakeMembershipRepository : IMembershipRepository
+    {
+        public Task<IReadOnlyCollection<Membership>> GetActiveByCustomerIdAsync(Guid customerId, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyCollection<Membership>>([]);
+
+        public Task AddAsync(Membership membership, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
     }
 }
 }

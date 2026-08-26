@@ -3,6 +3,7 @@ using FunBooksAndVideos.API.Extensions;
 using FunBooksAndVideos.API.Endpoints;
 using FunBooksAndVideos.Application.Features;
 using FunBooksAndVideos.Application.Services;
+using FunBooksAndVideos.Domain.Services;
 using FunBooksAndVideos.Persistence.Configuration;
 using FunBooksAndVideos.Persistence.Seed;
 
@@ -17,6 +18,7 @@ builder.Services.AddCentralExceptionHandling();
 builder.Services.AddMediatR(configuration =>
     configuration.RegisterServicesFromAssembly(typeof(FeatureAssemblyMarker).Assembly));
 builder.Services.AddScoped<PurchaseOrderValidationService>();
+builder.Services.AddScoped<MembershipActivationService>();
 builder.Services.AddPersistence(
     builder.Configuration.GetValue<string>("Persistence:DatabaseName") ?? "FunBooksAndVideos");
 builder.Services.AddScoped<ISeedDataProvider, SeedDataInitializer>();

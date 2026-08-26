@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using FluentAssertions;
 using FunBooksAndVideos.API.Contracts.PurchaseOrders.Request;
 using FunBooksAndVideos.API.Contracts.PurchaseOrders.Response;
 using FunBooksAndVideos.Persistence.Seed;
@@ -25,6 +26,7 @@ public sealed class PurchaseOrderEndpointsTests : IClassFixture<WebApplicationFa
     [Fact]
     public async Task PostMixedOrder_ReturnsCreatedOrderWithCalculatedTotal()
     {
+        // Arrange
         var request = new CreatePurchaseOrderRequest(
             SeedData.CustomerId,
             [
@@ -33,25 +35,32 @@ public sealed class PurchaseOrderEndpointsTests : IClassFixture<WebApplicationFa
                 new(SeedData.BookClubMembershipId, "membership")
             ]);
 
+        // Act
         var response = await client.PostAsJsonAsync("/api/v1/purchase-orders", request);
         var body = await response.Content.ReadFromJsonAsync<CreatePurchaseOrderResponse>();
 
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        Assert.NotNull(body);
-        Assert.Equal(54.97m, body.TotalPrice);
-        Assert.Equal(3, body.Items.Count);
-        Assert.NotEmpty(response.Headers.GetValues("X-Correlation-ID"));
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        body.Should().NotBeNull();
+        body!.TotalPrice.Should().Be(54.97m);
+        body.Items.Should().HaveCount(3);
+        response.Headers.GetValues("X-Correlation-ID").Should().NotBeEmpty();
     }
 
     [Fact]
     public async Task PostOrderWithoutItems_ReturnsProblemDetails()
     {
+        // Arrange
+        var request = new CreatePurchaseOrderRequest(SeedData.CustomerId, []);
+
+        // Act
         var response = await client.PostAsJsonAsync(
             "/api/v1/purchase-orders",
-            new CreatePurchaseOrderRequest(SeedData.CustomerId, []));
+            request);
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.Content.Headers.ContentType?.MediaType.Should().Be("application/problem+json");
     }
 }
 }

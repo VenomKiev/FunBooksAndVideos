@@ -8,8 +8,20 @@ namespace FunBooksAndVideos.Persistence.Repositories
     public sealed class EfCustomerRepository(FunBooksAndVideosDbContext dbContext) : ICustomerRepository
     {
         public Task<Customer?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-            => dbContext.Customers.SingleOrDefaultAsync(customer => customer.Id == id, cancellationToken);
+            => dbContext.Customers.Include(customer => customer.Memberships)
+                .SingleOrDefaultAsync(customer => customer.Id == id, cancellationToken);
     }
+}
+
+public sealed class EfMembershipRepository(FunBooksAndVideosDbContext dbContext) : IMembershipRepository
+{
+    public async Task<IReadOnlyCollection<Membership>> GetActiveByCustomerIdAsync(Guid customerId, CancellationToken cancellationToken = default)
+        => await dbContext.Memberships
+            .Where(membership => membership.CustomerId == customerId && membership.IsActive)
+            .ToListAsync(cancellationToken);
+
+    public Task AddAsync(Membership membership, CancellationToken cancellationToken = default)
+        => dbContext.Memberships.AddAsync(membership, cancellationToken).AsTask();
 }
 
 public sealed class EfProductRepository(FunBooksAndVideosDbContext dbContext) : IProductRepository

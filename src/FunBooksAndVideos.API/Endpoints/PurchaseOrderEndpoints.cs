@@ -31,8 +31,11 @@ namespace FunBooksAndVideos.API.Endpoints
 
             if (!result.IsSuccess)
             {
+                var statusCode = result.ErrorCode == "DUPLICATE_ACTIVE_MEMBERSHIP"
+                    ? StatusCodes.Status409Conflict
+                    : StatusCodes.Status400BadRequest;
                 return Results.Problem(
-                    statusCode: StatusCodes.Status400BadRequest,
+                    statusCode: statusCode,
                     title: "Purchase order validation failed.",
                     detail: result.ErrorMessage,
                     instance: "/api/v1/purchase-orders",

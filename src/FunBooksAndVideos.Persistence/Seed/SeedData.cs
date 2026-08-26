@@ -23,8 +23,8 @@ namespace FunBooksAndVideos.Persistence.Seed
             dbContext.Products.AddRange(
                 new Product(VideoId, "Comprehensive First Aid Training", ProductType.Video, 29.99m, false),
                 new Product(BookId, "The Girl on the Train", ProductType.Book, 14.99m, true),
-                new Product(BookClubMembershipId, "Book Club Membership", ProductType.Membership, 9.99m, false),
-                new Product(VideoClubMembershipId, "Video Club Membership", ProductType.Membership, 12.99m, false));
+                new Product(BookClubMembershipId, "Book Club Membership", ProductType.Membership, 9.99m, false, MembershipType.BookClub),
+                new Product(VideoClubMembershipId, "Video Club Membership", ProductType.Membership, 12.99m, false, MembershipType.VideoClub));
         }
     }
 }
