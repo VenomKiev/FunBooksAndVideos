@@ -3,7 +3,7 @@ using FunBooksAndVideos.Domain.Entities;
 using FunBooksAndVideos.Domain.Enums;
 using FunBooksAndVideos.Domain.Services;
 
-namespace FunBooksAndVideos.Application.UnitTests
+namespace FunBooksAndVideos.Domain.UnitTests
 {
     public sealed class ShippingSlipTests
     {

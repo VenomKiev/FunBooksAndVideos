@@ -6,12 +6,12 @@
     <Project Path="src/FunBooksAndVideos.Persistence/FunBooksAndVideos.Persistence.csproj" Id="e386ba87-77ad-40a6-9b50-54d8e4147903" />
   </Folder>
   <Folder Name="/tests/" />
-  <Folder Name="/tests/IntegrationTests/" />
-  <Folder Name="/tests/IntegrationTests/FunBooksAndVideos.API/">
+  <Folder Name="/tests/IntegrationTests/">
     <Project Path="tests/IntegrationTests/FunBooksAndVideos.API/FunBooksAndVideos.API.IntegrationTests.csproj" />
   </Folder>
-  <Folder Name="/tests/UnitTests/" />
-  <Folder Name="/tests/UnitTests/FunBooksAndVideos.Application/">
+  <Folder Name="/tests/UnitTests/">
     <Project Path="tests/UnitTests/FunBooksAndVideos.Application/FunBooksAndVideos.Application.UnitTests.csproj" />
+    <Project Path="tests/UnitTests/FunBooksAndVideos.Domain/FunBooksAndVideos.Domain.UnitTests.csproj" />
+    <Project Path="tests/UnitTests/FunBooksAndVideos.Persistence/FunBooksAndVideos.Persistence.UnitTests.csproj" />
   </Folder>
 </Solution>
