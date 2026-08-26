@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FunBooksAndVideos.API/FunBooksAndVideos.API.csproj" />
+    <Project Path="src/FunBooksAndVideos.Application/FunBooksAndVideos.Application.csproj" Id="bf6718b4-f139-418c-b01e-f67a8787e551" />
+    <Project Path="src/FunBooksAndVideos.Domain/FunBooksAndVideos.Domain.csproj" Id="7c7bc59e-8822-46cf-90c2-c3a1dea4dc88" />
+    <Project Path="src/FunBooksAndVideos.Persistence/FunBooksAndVideos.Persistence.csproj" Id="e386ba87-77ad-40a6-9b50-54d8e4147903" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/IntegrationTests/" />
+  <Folder Name="/tests/IntegrationTests/FunBooksAndVideos.API/">
+    <Project Path="tests/IntegrationTests/FunBooksAndVideos.API/FunBooksAndVideos.API.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/tests/UnitTests/" />
+  <Folder Name="/tests/UnitTests/FunBooksAndVideos.Application/">
+    <Project Path="tests/UnitTests/FunBooksAndVideos.Application/FunBooksAndVideos.Application.UnitTests.csproj" />
+  </Folder>
+</Solution>
