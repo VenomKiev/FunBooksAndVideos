@@ -40,7 +40,7 @@ namespace FunBooksAndVideos.Application.Features.PurchaseOrders.Commands
             var items = validation.Items
                 .Select(item => PurchaseOrderItem.Create(
                     item.Product.Id,
-                    item.Request.ItemType.ToLowerInvariant(),
+                    item.Product.Type.ToString().ToLowerInvariant(),
                     item.Request.Quantity,
                     item.Product.Price))
                 .ToList();
