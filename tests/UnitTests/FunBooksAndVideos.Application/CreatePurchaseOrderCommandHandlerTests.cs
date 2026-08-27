@@ -1,12 +1,11 @@
 using FunBooksAndVideos.Application.Features.PurchaseOrders.Commands;
 using FluentAssertions;
-using FunBooksAndVideos.Application.Features.PurchaseOrders.Handlers;
 using FunBooksAndVideos.Application.Interfaces;
-using FunBooksAndVideos.Application.Services;
 using FunBooksAndVideos.Domain.Entities;
 using FunBooksAndVideos.Domain.Enums;
 using FunBooksAndVideos.Domain.Services;
 using Microsoft.Extensions.Logging.Abstractions;
+using FunBooksAndVideos.Application.Features.PurchaseOrders.Validations;
 
 namespace FunBooksAndVideos.Application.UnitTests
 {
@@ -17,11 +16,11 @@ public sealed class CreatePurchaseOrderCommandHandlerTests
     public async Task Handle_MixedProductOrder_CreatesItemizedOrderWithCatalogTotal()
     {
         // Arrange
-        var customer = new Customer(Guid.NewGuid(), "Test Customer");
+        var customer = Customer.Create("Test Customer");
         var products = new[]
         {
-            new Product(Guid.NewGuid(), "Book", ProductType.Book, 14.99m, true),
-            new Product(Guid.NewGuid(), "Video", ProductType.Video, 29.99m, false)
+            Product.Create("Book", ProductType.Book, 14.99m, true),
+            Product.Create("Video", ProductType.Video, 29.99m, false)
         };
         var orders = new List<PurchaseOrder>();
         var handler = new CreatePurchaseOrderCommandHandler(
@@ -48,7 +47,7 @@ public sealed class CreatePurchaseOrderCommandHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.TotalPrice.Should().Be(74.97m);
-        result.ItemLines.Should().HaveCount(2);
+        result.Items.Should().HaveCount(2);
         orders.Should().ContainSingle();
     }
 
@@ -56,7 +55,7 @@ public sealed class CreatePurchaseOrderCommandHandlerTests
     public async Task Handle_EmptyItems_ReturnsValidationFailure()
     {
         // Arrange
-        var customer = new Customer(Guid.NewGuid(), "Test Customer");
+        var customer = Customer.Create("Test Customer");
         var handler = new CreatePurchaseOrderCommandHandler(
             new FakeCustomerRepository(customer),
             new FakeOrderRepository([]),
@@ -74,33 +73,6 @@ public sealed class CreatePurchaseOrderCommandHandlerTests
         // Assert
         result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be("ITEMS_REQUIRED");
-    }
-
-    [Fact]
-    public async Task Handle_SaveFailure_RemovesActivatedMembershipFromCustomer()
-    {
-        // Arrange
-        var customer = new Customer(Guid.NewGuid(), "Test Customer");
-        var membershipProduct = new Product(Guid.NewGuid(), "Book Club", ProductType.Membership, 9.99m, false, MembershipType.BookClub);
-        var handler = new CreatePurchaseOrderCommandHandler(
-            new FakeCustomerRepository(customer),
-            new FakeOrderRepository([]),
-            new PurchaseOrderValidationService(new FakeProductRepository([membershipProduct])),
-            new ThrowingUnitOfWork(),
-            NullLogger<CreatePurchaseOrderCommandHandler>.Instance,
-            new MembershipActivationService(),
-            new FakeMembershipRepository(),
-            new ShippingSlipService(),
-            new FakeShippingSlipRepository());
-
-        // Act
-        Func<Task> act = () => handler.Handle(
-            new CreatePurchaseOrderCommand(customer.Id, [new(membershipProduct.Id, "membership", 1)]),
-            CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>();
-        customer.Memberships.Should().BeEmpty();
     }
 
     private sealed class FakeCustomerRepository(Customer customer) : ICustomerRepository

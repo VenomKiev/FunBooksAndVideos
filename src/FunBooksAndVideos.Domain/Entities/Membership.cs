@@ -8,11 +8,18 @@ namespace FunBooksAndVideos.Domain.Entities
         {
         }
 
-        public Membership(Guid id, Guid customerId, MembershipType membershipType)
+        public static Membership Create(Guid customerId, MembershipType membershipType)
+            => new Membership
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = customerId,
+                MembershipType = membershipType
+            };
+
+        public void Activate(DateTimeOffset activatedAt)
         {
-            Id = id;
-            CustomerId = customerId;
-            MembershipType = membershipType;
+            IsActive = true;
+            ActivatedAt = activatedAt;
         }
 
         public Guid Id { get; private set; }
@@ -24,11 +31,5 @@ namespace FunBooksAndVideos.Domain.Entities
         public bool IsActive { get; private set; }
 
         public DateTimeOffset? ActivatedAt { get; private set; }
-
-        public void Activate(DateTimeOffset activatedAt)
-        {
-            IsActive = true;
-            ActivatedAt = activatedAt;
-        }
     }
 }

@@ -18,17 +18,7 @@ namespace FunBooksAndVideos.Persistence.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<PurchaseOrder>()
-                .HasMany(order => order.ItemLines)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Customer>()
-                .HasMany(customer => customer.Memberships)
-                .WithOne()
-                .HasForeignKey(membership => membership.CustomerId)
-                .OnDelete(DeleteBehavior.Cascade);
-
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(FunBooksAndVideosDbContext).Assembly);
             base.OnModelCreating(modelBuilder);
         }
     }

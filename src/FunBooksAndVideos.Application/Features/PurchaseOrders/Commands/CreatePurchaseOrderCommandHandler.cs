@@ -1,22 +1,21 @@
+using FunBooksAndVideos.Application.Features.PurchaseOrders.Mappers;
 using FunBooksAndVideos.Application.Interfaces;
-using FunBooksAndVideos.Application.Services;
-using FunBooksAndVideos.Application.Features.PurchaseOrders.Commands;
 using FunBooksAndVideos.Domain.Entities;
 using FunBooksAndVideos.Domain.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace FunBooksAndVideos.Application.Features.PurchaseOrders.Handlers
+namespace FunBooksAndVideos.Application.Features.PurchaseOrders.Commands
 {
     public sealed class CreatePurchaseOrderCommandHandler(
         ICustomerRepository customerRepository,
         IPurchaseOrderRepository purchaseOrderRepository,
-        PurchaseOrderValidationService validationService,
+        IPurchaseOrderValidationService validationService,
         IUnitOfWork unitOfWork,
         ILogger<CreatePurchaseOrderCommandHandler> logger,
-        MembershipActivationService membershipActivationService,
+        IMembershipActivationService membershipActivationService,
         IMembershipRepository membershipRepository,
-        ShippingSlipService shippingSlipService,
+        IShippingSlipService shippingSlipService,
         IShippingSlipRepository shippingSlipRepository)
         : IRequestHandler<CreatePurchaseOrderCommand, CreatePurchaseOrderResult>
     {
@@ -25,39 +24,44 @@ namespace FunBooksAndVideos.Application.Features.PurchaseOrders.Handlers
             CancellationToken cancellationToken)
         {
             var customer = await customerRepository.GetByIdAsync(command.CustomerId, cancellationToken);
+
             if (customer is null)
             {
-                return new(false, null, null, null, null, null, "CUSTOMER_NOT_FOUND", "The customer was not found.");
+                return CreatePurchaseOrderResult.Error("CUSTOMER_NOT_FOUND", "The customer was not found.");
             }
 
             var validation = await validationService.ValidateAsync(command, customer, cancellationToken);
+
             if (!validation.IsValid)
             {
-                return new(false, null, null, null, null, null, validation.Code, validation.Message);
+                return CreatePurchaseOrderResult.Error(validation.Code, validation.Message);
             }
 
-            var lines = validation.Items
-                .Select(item => new PurchaseOrderLine(
-                    Guid.NewGuid(),
+            var items = validation.Items
+                .Select(item => PurchaseOrderItem.Create(
                     item.Product.Id,
                     item.Request.ItemType.ToLowerInvariant(),
                     item.Request.Quantity,
                     item.Product.Price))
                 .ToList();
-            var order = new PurchaseOrder(Guid.NewGuid(), customer.Id, lines.Sum(line => line.LineTotal), lines);
+
+            var order = PurchaseOrder.Create(customer.Id, items.Sum(line => line.LineTotal), items);
 
             var activatedMemberships = new List<Membership>();
+
             foreach (var membershipItem in validation.Items.Where(item => item.Product.MembershipType.HasValue))
             {
                 var activation = membershipActivationService.Activate(customer, membershipItem.Product.MembershipType!.Value);
                 if (!activation.IsSuccess)
                 {
-                    return new(false, null, null, null, null, null, activation.ErrorCode, activation.ErrorMessage);
+                    return CreatePurchaseOrderResult.Error(activation.ErrorCode, activation.ErrorMessage);
                 }
 
                 var membership = activation.Membership!;
                 activatedMemberships.Add(membership);
+
                 await membershipRepository.AddAsync(membership, cancellationToken);
+
                 logger.LogInformation(
                     "Membership {MembershipType} activated for customer {CustomerId}",
                     membership.MembershipType,
@@ -67,13 +71,16 @@ namespace FunBooksAndVideos.Application.Features.PurchaseOrders.Handlers
             foreach (var physicalItem in validation.Items.Where(item => item.Product.IsPhysical))
             {
                 var shippingResult = shippingSlipService.CreateForPhysicalProduct(order, physicalItem.Product);
+
                 if (!shippingResult.IsSuccess)
                 {
-                    return new(false, null, null, null, null, null, shippingResult.ErrorCode, shippingResult.ErrorMessage);
+                    return CreatePurchaseOrderResult.Error(shippingResult.ErrorCode, shippingResult.ErrorMessage);
                 }
 
                 var shippingSlip = shippingResult.ShippingSlip!;
+
                 await shippingSlipRepository.AddAsync(shippingSlip, cancellationToken);
+
                 logger.LogInformation(
                     "Shipping slip {ShippingSlipId} created for purchase order {PurchaseOrderId} and product {ProductId}",
                     shippingSlip.Id,
@@ -81,20 +88,8 @@ namespace FunBooksAndVideos.Application.Features.PurchaseOrders.Handlers
                     physicalItem.Product.Id);
             }
 
-            try
-            {
-                await purchaseOrderRepository.AddAsync(order, cancellationToken);
-                await unitOfWork.SaveChangesAsync(cancellationToken);
-            }
-            catch
-            {
-                foreach (var membership in activatedMemberships)
-                {
-                    customer.RemoveMembership(membership);
-                }
-
-                throw;
-            }
+            await purchaseOrderRepository.AddAsync(order, cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
 
             logger.LogInformation(
                 "Purchase order {PurchaseOrderId} created for customer {CustomerId} with total {TotalPrice}",
@@ -102,16 +97,11 @@ namespace FunBooksAndVideos.Application.Features.PurchaseOrders.Handlers
                 customer.Id,
                 order.TotalPrice);
 
-            var resultLines = lines
-                .Select(line => new CreatePurchaseOrderLineResult(
-                    line.Id,
-                    line.ItemType,
-                    line.ItemId,
-                    line.Quantity,
-                    line.UnitPrice))
+            var resultItems = items
+                .Select(item => item.ToItemResult())
                 .ToArray();
 
-            return new(true, order.Id, order.CustomerId, order.TotalPrice, order.Status.ToString(), resultLines, null, null);
+            return order.ToSuccessResult(resultItems);
         }
     }
 }

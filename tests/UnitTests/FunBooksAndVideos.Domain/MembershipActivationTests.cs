@@ -11,7 +11,7 @@ namespace FunBooksAndVideos.Domain.UnitTests
         public void Activate_NewClubMembership_ActivatesImmediately()
         {
             // Arrange
-            var customer = new Customer(Guid.NewGuid(), "Test Customer");
+            var customer = Customer.Create("Test Customer");
             var service = new MembershipActivationService();
 
             // Act
@@ -29,7 +29,7 @@ namespace FunBooksAndVideos.Domain.UnitTests
         public void Activate_BothClubMemberships_DerivesPremiumStatus()
         {
             // Arrange
-            var customer = new Customer(Guid.NewGuid(), "Test Customer");
+            var customer = Customer.Create("Test Customer");
             var service = new MembershipActivationService();
 
             // Act
@@ -44,7 +44,7 @@ namespace FunBooksAndVideos.Domain.UnitTests
         public void Activate_ExistingActiveMembership_ReturnsDuplicateFailure()
         {
             // Arrange
-            var customer = new Customer(Guid.NewGuid(), "Test Customer");
+            var customer = Customer.Create("Test Customer");
             var service = new MembershipActivationService();
             service.Activate(customer, MembershipType.BookClub);
 

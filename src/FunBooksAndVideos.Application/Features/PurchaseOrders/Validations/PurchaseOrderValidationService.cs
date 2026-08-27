@@ -3,9 +3,9 @@ using FunBooksAndVideos.Application.Interfaces;
 using FunBooksAndVideos.Domain.Entities;
 using FunBooksAndVideos.Domain.Enums;
 
-namespace FunBooksAndVideos.Application.Services
+namespace FunBooksAndVideos.Application.Features.PurchaseOrders.Validations
 {
-    public sealed class PurchaseOrderValidationService(IProductRepository productRepository)
+    public sealed class PurchaseOrderValidationService(IProductRepository productRepository) : IPurchaseOrderValidationService
     {
         public async Task<(bool IsValid, string? Code, string? Message, List<(CreatePurchaseOrderItem Request, Product Product)> Items)> ValidateAsync(
             CreatePurchaseOrderCommand command,
@@ -22,20 +22,22 @@ namespace FunBooksAndVideos.Application.Services
                 return (false, "ITEMS_REQUIRED", "At least one order item is required.", []);
             }
 
-            var resolvedItems = new List<(CreatePurchaseOrderItem Request, Product Product)>();
+            var resolvedItems = new List<(CreatePurchaseOrderItem Item, Product Product)>();
+
             var requestedMembershipTypes = new HashSet<MembershipType>();
-            foreach (var request in command.Items)
+
+            foreach (var item in command.Items)
             {
-                if (request.ItemId == Guid.Empty || request.Quantity <= 0 || string.IsNullOrWhiteSpace(request.ItemType))
+                if (item.ItemId == Guid.Empty || item.Quantity <= 0 || string.IsNullOrWhiteSpace(item.ItemType))
                 {
                     return (false, "INVALID_ITEM", "Each order item must include a valid item ID, type, and positive quantity.", []);
                 }
 
-                var product = await productRepository.GetByIdAsync(request.ItemId, cancellationToken);
+                var product = await productRepository.GetByIdAsync(item.ItemId, cancellationToken);
 
                 if (product is null)
                 {
-                    return (false, "ITEM_NOT_FOUND", $"Order item '{request.ItemId}' was not found.", []);
+                    return (false, "ITEM_NOT_FOUND", $"Order item '{item.ItemId}' was not found.", []);
                 }
 
                 if (product.MembershipType is { } membershipType &&
@@ -45,7 +47,7 @@ namespace FunBooksAndVideos.Application.Services
                     return (false, "DUPLICATE_ACTIVE_MEMBERSHIP", "The customer already has an active membership of this type.", []);
                 }
 
-                resolvedItems.Add((request, product));
+                resolvedItems.Add((item, product));
             }
 
             return (true, null, null, resolvedItems);

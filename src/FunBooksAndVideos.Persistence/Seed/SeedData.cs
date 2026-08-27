@@ -19,12 +19,12 @@ namespace FunBooksAndVideos.Persistence.Seed
                 return;
             }
 
-            dbContext.Customers.Add(new Customer(CustomerId, "Alex Customer"));
+            dbContext.Customers.Add(Customer.Create(CustomerId, "Alex Customer"));
             dbContext.Products.AddRange(
-                new Product(VideoId, "Comprehensive First Aid Training", ProductType.Video, 29.99m, false),
-                new Product(BookId, "The Girl on the Train", ProductType.Book, 14.99m, true),
-                new Product(BookClubMembershipId, "Book Club Membership", ProductType.Membership, 9.99m, false, MembershipType.BookClub),
-                new Product(VideoClubMembershipId, "Video Club Membership", ProductType.Membership, 12.99m, false, MembershipType.VideoClub));
+                Product.Create(VideoId, "Comprehensive First Aid Training", ProductType.Video, 29.99m, false),
+                Product.Create(BookId, "The Girl on the Train", ProductType.Book, 14.99m, true),
+                Product.Create(BookClubMembershipId, "Book Club Membership", ProductType.Membership, 9.99m, false, MembershipType.BookClub),
+                Product.Create(VideoClubMembershipId, "Video Club Membership", ProductType.Membership, 12.99m, false, MembershipType.VideoClub));
         }
     }
 }

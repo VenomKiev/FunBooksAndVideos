@@ -4,7 +4,7 @@ using FunBooksAndVideos.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace FunBooksAndVideos.Persistence.Configuration
+namespace FunBooksAndVideos.Persistence.Extensions
 {
     public static class PersistenceServiceCollectionExtensions
     {
@@ -14,6 +14,7 @@ namespace FunBooksAndVideos.Persistence.Configuration
 
             services.AddDbContext<FunBooksAndVideosDbContext>(options =>
                 options.UseInMemoryDatabase(databaseName));
+
             services.AddScoped<ICustomerRepository, EfCustomerRepository>();
             services.AddScoped<IProductRepository, EfProductRepository>();
             services.AddScoped<IPurchaseOrderRepository, EfPurchaseOrderRepository>();

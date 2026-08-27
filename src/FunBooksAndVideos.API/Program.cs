@@ -1,11 +1,12 @@
-using Serilog;
-using FunBooksAndVideos.API.Extensions;
 using FunBooksAndVideos.API.Endpoints;
+using FunBooksAndVideos.API.Extensions;
 using FunBooksAndVideos.Application.Features;
-using FunBooksAndVideos.Application.Services;
+using FunBooksAndVideos.Application.Features.PurchaseOrders.Commands;
+using FunBooksAndVideos.Application.Interfaces;
 using FunBooksAndVideos.Domain.Services;
-using FunBooksAndVideos.Persistence.Configuration;
+using FunBooksAndVideos.Persistence.Extensions;
 using FunBooksAndVideos.Persistence.Seed;
+using Serilog;
 
 Log.Logger = SerilogExtensions.CreateBootstrapLogger();
 
@@ -14,18 +15,23 @@ var builder = WebApplication.CreateBuilder(args);
 builder.UseSerilog();
 
 builder.Services.AddOpenApi();
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.CustomSchemaIds(type => type.FullName!.Replace('+', '.'));
 });
+
 builder.Services.AddCentralExceptionHandling();
+
 builder.Services.AddMediatR(configuration =>
-    configuration.RegisterServicesFromAssembly(typeof(FeatureAssemblyMarker).Assembly));
-builder.Services.AddScoped<PurchaseOrderValidationService>();
-builder.Services.AddScoped<MembershipActivationService>();
-builder.Services.AddScoped<ShippingSlipService>();
+    configuration.RegisterServicesFromAssembly(typeof(CreatePurchaseOrderCommandHandler).Assembly));
+
+builder.Services.AddApplicationServices();
+builder.Services.AddDomainServices();
+
 builder.Services.AddPersistence(
     builder.Configuration.GetValue<string>("Persistence:DatabaseName") ?? "FunBooksAndVideos");
+
 builder.Services.AddScoped<ISeedDataProvider, SeedDataInitializer>();
 
 var app = builder.Build();

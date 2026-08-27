@@ -3,25 +3,21 @@ using FunBooksAndVideos.Domain.Enums;
 
 namespace FunBooksAndVideos.Domain.Services
 {
-    public sealed class MembershipActivationService
+    public sealed class MembershipActivationService : IMembershipActivationService
     {
         public MembershipActivationResult Activate(Customer customer, MembershipType membershipType)
         {
-            if (membershipType == MembershipType.Premium)
-            {
-                return new(false, "PREMIUM_DERIVED", "Premium membership is derived from Book Club and Video Club memberships.", null);
-            }
-
             if (customer.Memberships.Any(membership =>
                 membership.IsActive && membership.MembershipType == membershipType))
             {
-                return new(false, "DUPLICATE_ACTIVE_MEMBERSHIP", "The customer already has an active membership of this type.", null);
+                return MembershipActivationResult.Error("DUPLICATE_ACTIVE_MEMBERSHIP", "The customer already has an active membership of this type.");
             }
 
-            var membership = new Membership(Guid.NewGuid(), customer.Id, membershipType);
+            var membership = Membership.Create(customer.Id, membershipType);
             membership.Activate(DateTimeOffset.UtcNow);
             customer.AddMembership(membership);
-            return new(true, null, null, membership);
+
+            return MembershipActivationResult.Success(membership);
         }
     }
 
@@ -29,5 +25,12 @@ namespace FunBooksAndVideos.Domain.Services
         bool IsSuccess,
         string? ErrorCode,
         string? ErrorMessage,
-        Membership? Membership);
+        Membership? Membership)
+    {
+        public static MembershipActivationResult Success(Membership membership)
+            => new(true, null, null, membership);
+
+        public static MembershipActivationResult Error(string errorCode, string errorMessage)
+            => new(false, errorCode, errorMessage, null);
+    };
 }

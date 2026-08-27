@@ -2,16 +2,16 @@ using FunBooksAndVideos.Domain.Entities;
 
 namespace FunBooksAndVideos.Domain.Services
 {
-    public sealed class ShippingSlipService
+    public sealed class ShippingSlipService : IShippingSlipService
     {
         public ShippingSlipResult CreateForPhysicalProduct(PurchaseOrder order, Product product)
         {
             if (!product.IsPhysical)
             {
-                return new(false, "PRODUCT_NOT_PHYSICAL", "A shipping slip can only be created for a physical product.", null);
+                return ShippingSlipResult.Failure("PRODUCT_NOT_PHYSICAL", "A shipping slip can only be created for a physical product.");
             }
 
-            return new(true, null, null, new ShippingSlip(Guid.NewGuid(), order.Id, product.Id));
+            return ShippingSlipResult.Success(ShippingSlip.Create(order.Id, product.Id));
         }
     }
 
@@ -19,5 +19,12 @@ namespace FunBooksAndVideos.Domain.Services
         bool IsSuccess,
         string? ErrorCode,
         string? ErrorMessage,
-        ShippingSlip? ShippingSlip);
+        ShippingSlip? ShippingSlip)
+    {
+        public static ShippingSlipResult Success(ShippingSlip shippingSlip)
+            => new(true, null, null, shippingSlip);
+
+        public static ShippingSlipResult Failure(string errorCode, string errorMessage)
+            => new(false, errorCode, errorMessage, null);
+    };
 }

@@ -11,8 +11,8 @@ namespace FunBooksAndVideos.Domain.UnitTests
         public void CreateForPhysicalProduct_CreatesSlipWithCreatedStatus()
         {
             // Arrange
-            var order = new PurchaseOrder(Guid.NewGuid(), Guid.NewGuid(), 10m, []);
-            var product = new Product(Guid.NewGuid(), "Book", ProductType.Book, 10m, true);
+            var order = PurchaseOrder.Create(Guid.NewGuid(),10m, []);
+            var product = Product.Create("Book", ProductType.Book, 10m, true);
             var service = new ShippingSlipService();
 
             // Act
@@ -30,8 +30,8 @@ namespace FunBooksAndVideos.Domain.UnitTests
         public void CreateForDigitalProduct_ReturnsValidationFailure()
         {
             // Arrange
-            var order = new PurchaseOrder(Guid.NewGuid(), Guid.NewGuid(), 10m, []);
-            var product = new Product(Guid.NewGuid(), "Video", ProductType.Video, 10m, false);
+            var order = PurchaseOrder.Create(Guid.NewGuid(), 10m, []);
+            var product = Product.Create("Video", ProductType.Video, 10m, false);
             var service = new ShippingSlipService();
 
             // Act

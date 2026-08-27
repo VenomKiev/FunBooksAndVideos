@@ -6,10 +6,28 @@ namespace FunBooksAndVideos.Domain.Entities
         {
         }
 
-        public Customer(Guid id, string name)
+        public static Customer Create(string name)
+            => new Customer
+            {
+                Id = Guid.NewGuid(),
+                Name = name
+            };
+
+        public static Customer Create(Guid id, string name)
+            => new Customer
+            {
+                Id = id,
+                Name = name
+            };
+
+        public void AddMembership(Membership membership)
         {
-            Id = id;
-            Name = name;
+            Memberships.Add(membership);
+        }
+
+        public void RemoveMembership(Membership membership)
+        {
+            Memberships.Remove(membership);
         }
 
         public Guid Id { get; private set; }
@@ -22,15 +40,5 @@ namespace FunBooksAndVideos.Domain.Entities
             membership.IsActive && membership.MembershipType == Enums.MembershipType.BookClub)
             && Memberships.Any(membership =>
                 membership.IsActive && membership.MembershipType == Enums.MembershipType.VideoClub);
-
-        public void AddMembership(Membership membership)
-        {
-            Memberships.Add(membership);
-        }
-
-        public void RemoveMembership(Membership membership)
-        {
-            Memberships.Remove(membership);
-        }
     }
 }

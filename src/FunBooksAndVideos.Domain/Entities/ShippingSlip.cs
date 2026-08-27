@@ -16,6 +16,15 @@ namespace FunBooksAndVideos.Domain.Entities
             Status = ShippingSlipStatus.Created;
         }
 
+        public static ShippingSlip Create(Guid purchaseOrderId, Guid productId) 
+            => new ShippingSlip
+            {
+                Id = Guid.NewGuid(),
+                PurchaseOrderId = purchaseOrderId,
+                ProductId = productId,
+                Status = ShippingSlipStatus.Created
+            };
+
         public Guid Id { get; private set; }
 
         public Guid PurchaseOrderId { get; private set; }

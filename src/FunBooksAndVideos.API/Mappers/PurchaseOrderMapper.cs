@@ -5,14 +5,13 @@ namespace FunBooksAndVideos.API.Mappers
 {
     public static class PurchaseOrderMapper
     {
-        public static Contracts.PurchaseOrders.Response.CreatePurchaseOrderResponse ToResponse(this CreatePurchaseOrderResult purchaseOrder)
-        {
-            return new Contracts.PurchaseOrders.Response.CreatePurchaseOrderResponse(
+        public static CreatePurchaseOrderResponse ToResponse(this CreatePurchaseOrderResult purchaseOrder)
+            => new(
                 purchaseOrder.OrderId!.Value,
                 purchaseOrder.CustomerId!.Value,
                 purchaseOrder.TotalPrice!.Value,
                 purchaseOrder.Status!,
-                purchaseOrder.ItemLines!
+                purchaseOrder.Items!
                     .Select(item => new OrderItem(
                         item.Id,
                         item.ItemType,
@@ -20,6 +19,5 @@ namespace FunBooksAndVideos.API.Mappers
                         item.Quantity,
                         item.UnitPrice))
                     .ToArray());
-        }
     }
 }

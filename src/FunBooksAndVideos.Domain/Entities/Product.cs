@@ -8,15 +8,27 @@ namespace FunBooksAndVideos.Domain.Entities
         {
         }
 
-        public Product(Guid id, string name, ProductType type, decimal price, bool isPhysical, MembershipType? membershipType = null)
-        {
-            Id = id;
-            Name = name;
-            Type = type;
-            Price = price;
-            IsPhysical = isPhysical;
-            MembershipType = membershipType;
-        }
+        public static Product Create(string name, ProductType type, decimal price, bool isPhysical, MembershipType? membershipType = null)
+            => new Product
+            {
+                Id = Guid.NewGuid(),
+                Name = name,
+                Type = type,
+                Price = price,
+                IsPhysical = isPhysical,
+                MembershipType = membershipType,
+            };
+
+        public static Product Create(Guid id, string name, ProductType type, decimal price, bool isPhysical, MembershipType? membershipType = null)
+            => new Product
+            {
+                Id = id,
+                Name = name,
+                Type = type,
+                Price = price,
+                IsPhysical = isPhysical,
+                MembershipType = membershipType,
+            };
 
         public Guid Id { get; private set; }
 

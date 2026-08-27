@@ -15,6 +15,7 @@ namespace FunBooksAndVideos.API.Extensions
                 }
 
                 context.Response.Headers[CorrelationIdHeader] = correlationId;
+
                 using (context.RequestServices.GetRequiredService<ILoggerFactory>()
                     .CreateLogger("CorrelationId")
                     .BeginScope(new Dictionary<string, object> { ["CorrelationId"] = correlationId }))
