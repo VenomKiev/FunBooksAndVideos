@@ -16,6 +16,7 @@ namespace FunBooksAndVideos.API.Mappers
                         item.Id,
                         item.ItemType,
                         item.ItemId,
+                        item.ItemName,
                         item.Quantity,
                         item.UnitPrice))
                     .ToArray());

@@ -44,6 +44,9 @@ public sealed class PurchaseOrderEndpointsTests : IClassFixture<WebApplicationFa
         body.Should().NotBeNull();
         body!.TotalPrice.Should().Be(54.97m);
         body.Items.Should().HaveCount(3);
+        body.Items.Should().Contain(item => item.ItemId == SeedData.VideoId && item.ItemName == "Comprehensive First Aid Training");
+        body.Items.Should().Contain(item => item.ItemId == SeedData.BookId && item.ItemName == "The Girl on the Train");
+        body.Items.Should().Contain(item => item.ItemId == SeedData.BookClubMembershipId && item.ItemName == "Book Club Membership");
         response.Headers.GetValues("X-Correlation-ID").Should().NotBeEmpty();
     }
 

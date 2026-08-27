@@ -98,7 +98,7 @@ namespace FunBooksAndVideos.Application.Features.PurchaseOrders.Commands
                 order.TotalPrice);
 
             var resultItems = items
-                .Select(item => item.ToItemResult())
+                .Select((item, index) => item.ToItemResult(validation.Items[index].Product.Name))
                 .ToArray();
 
             return order.ToSuccessResult(resultItems);
